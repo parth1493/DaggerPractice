@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
@@ -50,14 +51,24 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.logout:
+        switch (item.getItemId()){
+
+            case R.id.logout:{
                 sessionManager.logOut();
                 return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            }
+
+            case android.R.id.home:
+                if(drawerLayout.isDrawerOpen(GravityCompat.START)){
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                }
+                else{
+                    return false;
+                }
         }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -65,11 +76,24 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         switch(menuItem.getItemId()){
 
             case R.id.nav_profile:{
-                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.profileScreen);
+
+                // nav options to clear backstack
+                NavOptions navOptions = new NavOptions.Builder()
+                        .setPopUpTo(R.id.main, true)
+                        .build();
+
+                Navigation.findNavController(this, R.id.nav_host_fragment)
+                        .navigate(R.id.profileScreen,
+                                null,
+                                navOptions
+                        );
                 break;
             }
-            case R.id.nav_posts: {
-                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.postsScreen);
+
+            case R.id.nav_posts:{
+                if(isValidDestination(R.id.postsScreen)){
+                    Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.postsScreen);
+                }
                 break;
             }
         }
@@ -77,5 +101,24 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         drawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        return NavigationUI.navigateUp(Navigation.findNavController(this, R.id.nav_host_fragment), drawerLayout);
+    }
+
+    public boolean isValidDestination(int destination){
+        return destination != Navigation.findNavController(this, R.id.nav_host_fragment).getCurrentDestination().getId();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(drawerLayout.isDrawerOpen(GravityCompat.START)){
+            drawerLayout.closeDrawer(GravityCompat.START);
+        }
+        else{
+            super.onBackPressed();
+        }
     }
 }
