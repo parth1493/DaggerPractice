@@ -6,24 +6,40 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
+
 import com.example.daggerpractice.BaseActivity;
 import com.example.daggerpractice.R;
+import com.example.daggerpractice.ui.main.post.PostsFragment;
 import com.example.daggerpractice.ui.main.profile.ProfileFragment;
+import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        testFragment();
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        init();
+
+    }
+    private void init(){
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout);
+        NavigationUI.setupWithNavController(navigationView, navController);
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
-    private void testFragment(){
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_container, new ProfileFragment())
-                .commit();
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -42,5 +58,24 @@ public class MainActivity extends BaseActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        switch(menuItem.getItemId()){
+
+            case R.id.nav_profile:{
+                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.profileScreen);
+                break;
+            }
+            case R.id.nav_posts: {
+                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.postsScreen);
+                break;
+            }
+        }
+        menuItem.setChecked(true);
+        drawerLayout.closeDrawer(GravityCompat.START);
+
+        return true;
     }
 }
